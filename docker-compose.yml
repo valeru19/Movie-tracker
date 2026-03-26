@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: movies_mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: secret
+      MONGO_INITDB_DATABASE: movies_db
+    ports:
+      - "27018:27018"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - movies_net
+
+  api:
+    build: .
+    container_name: movies_api
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      MONGO_URL: mongodb://admin:secret@mongodb:27017/movies_db?authSource=admin
+      MONGO_DB_NAME: movies_db
+    depends_on:
+      - mongodb
+    networks:
+      - movies_net
+
+volumes:
+  mongo_data:
+
+networks:
+  movies_net:
+    driver: bridge
